@@ -58,6 +58,15 @@ p{margin:0}
 #toast{position:absolute;left:50%;bottom:calc(18px + env(safe-area-inset-bottom,0px));transform:translate(-50%,30px);opacity:0;background:var(--fg);color:var(--bg);padding:10px 18px;border-radius:999px;font-size:13px;font-weight:800;transition:.35s;pointer-events:none;white-space:nowrap}
 #toast.on{transform:translate(-50%,0);opacity:1}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+/* Стили для рейтинга и ввода имени */
+.leaderboard { margin-top: 10px; text-align: left; background: rgba(255,255,255,0.4); border-radius: 12px; padding: 12px; border: 1.5px solid var(--fg); font-size: 13px;}
+.leaderboard h3 { margin: 0 0 8px 0; font-size: 14px; text-align: center;}
+.leaderboard ol { margin: 0; padding-left: 20px; }
+.leaderboard li { margin-bottom: 4px; display: flex; justify-content: space-between;}
+.leaderboard li span:first-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 180px; }
+.input-name { width: 100%; padding: 12px; border-radius: 12px; border: 2px solid var(--fg); background: #fff; color: var(--fg); font: inherit; text-align: center; margin-bottom: 5px; outline: none;}
+.input-name:focus { border-color: var(--c); }
 </style>
 </head>
 <body>
@@ -83,6 +92,13 @@ p{margin:0}
   <button class="btn" data-t="vib" aria-pressed="true">Вибрация</button>
   <p class="sub" id="stats"></p>
   <div class="chips" id="ach" aria-label="Достижения"></div>
+  
+  <!-- Блок рейтинга -->
+  <div class="leaderboard">
+    <h3>Топ-10 игроков</h3>
+    <ol id="top-list"><li>Загрузка...</li></ol>
+  </div>
+
   <p class="hint">Пробел или ↑ — прыжок. На телефоне — тап по экрану. P — пауза.</p>
 </div></section>
 
@@ -100,6 +116,13 @@ p{margin:0}
   <div class="big" id="fs">0</div>
   <div class="badge" id="nr" hidden>Новый рекорд!</div>
   <p class="sub" id="fb"></p>
+  
+  <!-- Блок отправки имени -->
+  <div id="submit-block" style="display:none; flex-direction: column; gap: 10px; margin-top: 10px;">
+    <input type="text" id="player-name" class="input-name" placeholder="Твоё имя" maxlength="20">
+    <button class="btn pri" id="btn-submit" data-a="submit">Отправить в рейтинг</button>
+  </div>
+
   <button class="btn pri" data-a="play">Ещё раз</button>
   <button class="btn" data-a="menu">В меню</button>
 </div></section>
@@ -115,9 +138,10 @@ const cv=$('#c'),cx=cv.getContext('2d'),root=document.documentElement;
 const WH=300,GY=250,PX=70,KEY='fefit.v1';
 const RM=matchMedia('(prefers-reduced-motion:reduce)').matches;
 const ACH=[[100,'Мелководье'],[500,'Риф'],[700,'Ночное плавание'],[1500,'Глубина'],[3000,'Бездна']];
+const API_URL = 'http://localhost:3000'; // Позже заменим на ссылку Render
 
 /* ---------- сохранение (только игровые данные, без личных) ---------- */
-let save={best:0,games:0,last:0,ach:[],sfx:true,mus:true,vib:true};
+let save={best:0,games:0,last:0,ach:[],sfx:true,mus:true,vib:true, playerName:''};
 try{save={...save,...JSON.parse(localStorage.getItem(KEY)||'{}')}}catch(e){}
 const persist=()=>{try{localStorage.setItem(KEY,JSON.stringify(save))}catch(e){}};
 const pad=n=>String(n).padStart(5,'0');
@@ -160,12 +184,69 @@ function resize(){
   S=Math.min(r.width/480,r.height/WH);W=r.width/S;HL=r.height/S;oy=HL>WH?(HL-WH)*.55:0;
 }
 
+/* ---------- API Рейтинг ---------- */
+async function loadLeaderboard() {
+  const topList = $('#top-list');
+  topList.innerHTML = '<li>Загрузка...</li>';
+  try {
+    const res = await fetch(`${API_URL}/leaderboard`);
+    const data = await res.json();
+    
+    if (data.length === 0) {
+      topList.innerHTML = '<li>Пока нет результатов</li>';
+      return;
+    }
+    topList.innerHTML = data.map(p => `<li><span>${p.player}</span><span>${p.score}</span></li>`).join('');
+  } catch (e) {
+    topList.innerHTML = '<li>Ошибка сервера</li>';
+  }
+}
+
+async function submitScore() {
+  const nameInput = $('#player-name');
+  const name = nameInput.value.trim();
+  if (!name) {
+    toast('Введите имя!');
+    return;
+  }
+  save.playerName = name;
+  persist();
+
+  const btn = $('#btn-submit');
+  btn.disabled = true;
+  btn.textContent = 'Отправка...';
+
+  try {
+    const res = await fetch(`${API_URL}/leaderboard`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ player: name, score: save.last })
+    });
+    if (res.ok) {
+      toast('Результат отправлен!');
+      $('#submit-block').style.display = 'none';
+      loadLeaderboard();
+    } else {
+      toast('Ошибка отправки');
+      btn.disabled = false;
+      btn.textContent = 'Отправить в рейтинг';
+    }
+  } catch (e) {
+    toast('Сервер недоступен');
+    btn.disabled = false;
+    btn.textContent = 'Отправить в рейтинг';
+  }
+}
+
 /* ---------- экраны ---------- */
 const hud=$('#hud');
 function show(id){
   $$('.scr').forEach(s=>s.classList.toggle('on',s.id===id));
   hud.classList.toggle('on',st==='play');
   const el=id&&$('#'+id+' .pri');if(el)requestAnimationFrame(()=>el.focus({preventScroll:true}));
+  if (id === 'start') {
+    loadLeaderboard(); // Обновляем рейтинг при входе в меню
+  }
 }
 function refresh(){
   $$('[data-t]').forEach(b=>b.setAttribute('aria-pressed',String(save[b.dataset.t])));
@@ -194,6 +275,15 @@ function die(){
   overT=setTimeout(()=>{
     $('#fs').textContent=score;$('#nr').hidden=!nr;
     $('#fb').textContent='Рекорд '+save.best+', игр '+save.games;refresh();show('over');
+    
+    // Показываем блок отправки
+    const submitBlock = $('#submit-block');
+    submitBlock.style.display = 'flex';
+    $('#player-name').value = save.playerName || '';
+    const btn = $('#btn-submit');
+    btn.disabled = false;
+    btn.textContent = 'Отправить в рейтинг';
+
     const bs=$$('#over .btn');bs.forEach(b=>b.disabled=true);setTimeout(()=>bs.forEach(b=>b.disabled=false),700);
     if(nr)sfx('win');
   },650);
@@ -281,51 +371,4 @@ function draw(){
     if(o.k==='s'){c.lineWidth=7;c.beginPath();c.moveTo(o.x+8,GY);for(let j=1;j<=6;j++)c.lineTo(o.x+8+Math.sin(t*2+o.ph+j*.8)*2.5*j/6,GY-o.h*j/6);c.stroke()}
     else if(o.k==='c'){
       const m=o.x+o.w/2,l=o.x+5,r=o.x+o.w-5;c.lineWidth=8;c.beginPath();
-      c.moveTo(m,GY);c.lineTo(m,GY-o.h);
-      c.moveTo(m,GY-o.h*.4);c.lineTo(l,GY-o.h*.4);c.lineTo(l,GY-o.h*.78);
-      c.moveTo(m,GY-o.h*.55);c.lineTo(r,GY-o.h*.55);c.lineTo(r,GY-o.h*.9);c.stroke();
-    }else{
-      const y=o.y+Math.sin(t*5+o.ph)*2;
-      c.beginPath();c.ellipse(o.x+20,y+8,14,8,0,0,6.3);c.fill();
-      c.beginPath();c.moveTo(o.x+30,y+8);c.lineTo(o.x+39,y);c.lineTo(o.x+39,y+16);c.fill();
-      c.fillStyle=bg;c.beginPath();c.arc(o.x+11,y+6,2,0,6.3);c.fill();c.fillStyle=fg;
-    }
-  }
-  octo();
-  for(const p of ps){c.globalAlpha=Math.max(0,p.l/p.m);if(p.ink){c.fillStyle=fg;c.beginPath();c.arc(p.x,p.y,p.r,0,6.3);c.fill()}else{c.strokeStyle=fg;c.lineWidth=1.5;c.beginPath();c.arc(p.x,p.y,p.r,0,6.3);c.stroke()}}
-  c.globalAlpha=1;c.restore();
-}
-function frame(ts){
-  const dt=Math.min(.05,(ts-last)/1000||0);last=ts;
-  if(st!=='pause')t+=dt;
-  if(st==='play')update(dt);else if(st==='start'||st==='load')dist+=130*dt;
-  if(st!=='pause')fx(dt);
-  draw();requestAnimationFrame(frame);
-}
-
-/* ---------- ввод и события (регистрируются один раз) ---------- */
-const act={play:startGame,resume,menu,pause:doPause};
-$$('[data-a]').forEach(b=>b.addEventListener('click',()=>{if(b.dataset.a!=='play'&&b.dataset.a!=='resume'&&b.dataset.a!=='pause')sfx('ui');act[b.dataset.a]();b.blur&&st==='play'&&b.blur()}));
-$$('[data-t]').forEach(b=>b.addEventListener('click',()=>{const k=b.dataset.t;save[k]=!save[k];persist();refresh();A();sfx('ui')}));
-cv.addEventListener('pointerdown',e=>{e.preventDefault();jump()});
-addEventListener('keydown',e=>{
-  if(e.code==='Space'||e.code==='ArrowUp'){if(st==='play'){e.preventDefault();jump()}}
-  else if(e.code==='KeyP'||e.code==='Escape'){if(st==='play')doPause();else if(st==='pause')resume()}
-});
-addEventListener('resize',resize);
-addEventListener('orientationchange',()=>setTimeout(resize,150));
-document.addEventListener('visibilitychange',()=>{if(document.hidden)doPause()});
-addEventListener('blur',doPause);
-addEventListener('contextmenu',e=>e.preventDefault());
-
-/* ---------- запуск ---------- */
-resize();refresh();
-requestAnimationFrame(frame);
-Promise.all([
-  Promise.race([document.fonts?document.fonts.ready:0,new Promise(r=>setTimeout(r,1400))]),
-  new Promise(r=>setTimeout(r,1000))
-]).then(()=>{if(st==='load')menu()});
-})();
-</script>
-</body>
-</html>
+      c.moveTo(m,GY
