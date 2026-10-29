@@ -371,4 +371,56 @@ function draw(){
     if(o.k==='s'){c.lineWidth=7;c.beginPath();c.moveTo(o.x+8,GY);for(let j=1;j<=6;j++)c.lineTo(o.x+8+Math.sin(t*2+o.ph+j*.8)*2.5*j/6,GY-o.h*j/6);c.stroke()}
     else if(o.k==='c'){
       const m=o.x+o.w/2,l=o.x+5,r=o.x+o.w-5;c.lineWidth=8;c.beginPath();
-      c.moveTo(m,GY
+      c.moveTo(m,GY);c.lineTo(m,GY-o.h);
+      c.moveTo(m,GY-o.h*.4);c.lineTo(l,GY-o.h*.4);c.lineTo(l,GY-o.h*.78);
+      c.moveTo(m,GY-o.h*.55);c.lineTo(r,GY-o.h*.55);c.lineTo(r,GY-o.h*.9);c.stroke();
+    }else{
+      const y=o.y+Math.sin(t*5+o.ph)*2;
+      c.beginPath();c.ellipse(o.x+20,y+8,14,8,0,0,6.3);c.fill();
+      c.beginPath();c.moveTo(o.x+30,y+8);c.lineTo(o.x+39,y);c.lineTo(o.x+39,y+16);c.fill();
+      c.fillStyle=bg;c.beginPath();c.arc(o.x+11,y+6,2,0,6.3);c.fill();c.fillStyle=fg;
+    }
+  }
+  octo();
+  for(const p of ps){c.globalAlpha=Math.max(0,p.l/p.m);if(p.ink){c.fillStyle=fg;c.beginPath();c.arc(p.x,p.y,p.r,0,6.3);c.fill()}else{c.strokeStyle=fg;c.lineWidth=1.5;c.beginPath();c.arc(p.x,p.y,p.r,0,6.3);c.stroke()}}
+  c.globalAlpha=1;c.restore();
+}
+function frame(ts){
+  const dt=Math.min(.05,(ts-last)/1000||0);last=ts;
+  if(st!=='pause')t+=dt;
+  if(st==='play')update(dt);else if(st==='start'||st==='load')dist+=130*dt;
+  if(st!=='pause')fx(dt);
+  draw();requestAnimationFrame(frame);
+}
+
+/* ---------- ввод и события (регистрируются один раз) ---------- */
+const act={play:startGame,resume,menu,pause:doPause,submit:submitScore};
+$$('[data-a]').forEach(b=>b.addEventListener('click',()=>{
+  const a = b.dataset.a;
+  if(a!=='play'&&a!=='resume'&&a!=='pause')sfx('ui');
+  if(act[a]) act[a]();
+  if(b.blur && st==='play') b.blur();
+}));
+$$('[data-t]').forEach(b=>b.addEventListener('click',()=>{const k=b.dataset.t;save[k]=!save[k];persist();refresh();A();sfx('ui')}));
+cv.addEventListener('pointerdown',e=>{e.preventDefault();jump()});
+addEventListener('keydown',e=>{
+  if(e.code==='Space'||e.code==='ArrowUp'){if(st==='play'){e.preventDefault();jump()}}
+  else if(e.code==='KeyP'||e.code==='Escape'){if(st==='play')doPause();else if(st==='pause')resume()}
+});
+addEventListener('resize',resize);
+addEventListener('orientationchange',()=>setTimeout(resize,150));
+document.addEventListener('visibilitychange',()=>{if(document.hidden)doPause()});
+addEventListener('blur',doPause);
+addEventListener('contextmenu',e=>e.preventDefault());
+
+/* ---------- запуск ---------- */
+resize();refresh();
+requestAnimationFrame(frame);
+Promise.all([
+  Promise.race([document.fonts?document.fonts.ready:0,new Promise(r=>setTimeout(r,1400))]),
+  new Promise(r=>setTimeout(r,1000))
+]).then(()=>{if(st==='load')menu()});
+})();
+</script>
+</body>
+</html>
