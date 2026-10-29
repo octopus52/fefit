@@ -18,21 +18,22 @@ body{margin:0;height:100%;background:var(--bg);color:var(--fg);font:500 15px/1.4
 .scr.on{display:flex;animation:in .35s ease both}
 @keyframes in{from{opacity:0;transform:scale(.97)}to{opacity:1;transform:none}}
 
-/* Убрали overflow:auto, чтобы не было ползунков */
-.pn{width:min(440px,100%);max-height:100%;display:flex;flex-direction:column;gap:12px;text-align:center;padding:clamp(16px,3vw,24px);background:var(--pn);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);border:2px solid var(--fg);border-radius:24px;box-shadow:6px 6px 0 var(--c)}
+/* Сжимаем меню, чтобы оно влезало на любых экранах без скролла */
+.pn{width:min(400px,100%);max-height:95vh;display:flex;flex-direction:column;justify-content:center;gap:8px;text-align:center;padding:15px 20px;background:var(--pn);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);border:2px solid var(--fg);border-radius:20px;box-shadow:6px 6px 0 var(--c); overflow: hidden;}
+
 h1,h2{margin:0;font-weight:800;letter-spacing:-.03em;line-height:1}
-h1{font-size:clamp(40px,10vw,60px)}
-h2{font-size:clamp(28px,8vw,40px)}
+h1{font-size:clamp(36px,8vw,52px)}
+h2{font-size:clamp(24px,6vw,32px)}
 p{margin:0}
-.sub{font-size:13px;opacity:.85}
-.hint{font-size:12px;opacity:.7}
-.row{display:flex;gap:10px}
+.sub{font-size:12px;opacity:.85}
+.hint{font-size:11px;opacity:.7}
+.row{display:flex;gap:8px}
 .row>*{flex:1}
-.btn{min-height:48px;padding:0 15px;border-radius:16px;border:2px solid var(--fg);background:transparent;color:var(--fg);font:inherit;font-size:14px;font-weight:800;cursor:pointer;transition:transform .12s,background .15s,box-shadow .15s,opacity .15s}
-.btn.pri{background:var(--c);color:var(--d);box-shadow:0 4px 0 var(--fg)}
+.btn{min-height:44px;padding:0 12px;border-radius:12px;border:2px solid var(--fg);background:transparent;color:var(--fg);font:inherit;font-size:13px;font-weight:800;cursor:pointer;transition:transform .12s,background .15s,box-shadow .15s,opacity .15s}
+.btn.pri{background:var(--c);color:var(--d);box-shadow:0 3px 0 var(--fg)}
 .btn[aria-pressed=true]{background:var(--fg);color:var(--bg)}
-@media (hover:hover){.btn:hover{transform:translateY(-2px)}.btn.pri:hover{box-shadow:0 6px 0 var(--fg)}}
-.btn:active{transform:translateY(3px) scale(.97);box-shadow:none}
+@media (hover:hover){.btn:hover{transform:translateY(-2px)}.btn.pri:hover{box-shadow:0 5px 0 var(--fg)}}
+.btn:active{transform:translateY(2px) scale(.97);box-shadow:none}
 .btn:focus-visible,.ib:focus-visible{outline:3px solid var(--c);outline-offset:3px}
 .btn:disabled{opacity:.4;cursor:not-allowed;transform:none;box-shadow:none}
 #hud{position:absolute;left:0;right:0;top:0;display:none;justify-content:space-between;align-items:flex-start;padding:12px max(14px,env(safe-area-inset-right)) 0 max(14px,env(safe-area-inset-left));pointer-events:none; z-index: 5;}
@@ -49,8 +50,8 @@ p{margin:0}
 .ib[aria-pressed=false]{opacity:.55}
 .ib[aria-pressed=false]::after{content:"";position:absolute;width:30px;height:2.5px;background:var(--c);transform:rotate(-45deg);border-radius:2px}
 @media (hover:hover){.ib:hover{background:var(--c);color:var(--d)}}
-.chips{display:flex;flex-wrap:wrap;gap:6px;justify-content:center}
-.chip{font-size:11px;padding:6px 10px;border-radius:999px;border:1.5px solid var(--fg);opacity:.4}
+.chips{display:flex;flex-wrap:wrap;gap:4px;justify-content:center; margin-top: 4px;}
+.chip{font-size:10px;padding:4px 8px;border-radius:999px;border:1.5px solid var(--fg);opacity:.4}
 .chip.on{opacity:1;background:var(--c);color:var(--d);border-color:var(--c);font-weight:800}
 .big{font-size:clamp(44px,12vw,64px);font-weight:800;font-variant-numeric:tabular-nums;line-height:1}
 .badge{align-self:center;background:var(--c);color:var(--d);font-weight:800;font-size:13px;padding:6px 14px;border-radius:999px;animation:pl .7s ease}
@@ -61,7 +62,7 @@ p{margin:0}
 #toast.on{transform:translate(-50%,0);opacity:1}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 
-.input-name { width: 100%; padding: 12px; border-radius: 12px; border: 2px solid var(--fg); background: #fff; color: var(--fg); font: inherit; text-align: center; outline: none; font-size: 16px;}
+.input-name { width: 100%; padding: 10px; border-radius: 10px; border: 2px solid var(--fg); background: #fff; color: var(--fg); font: inherit; text-align: center; outline: none; font-size: 14px;}
 .input-name:focus { border-color: var(--c); }
 
 /* Красивая панель рейтинга */
@@ -90,11 +91,11 @@ p{margin:0}
 #leaderboard-panel li span:first-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 160px; }
 #leaderboard-panel li span:last-child { font-weight: 800; }
 
-/* Кнопка рейтинга стала большой и заметной */
+/* Кнопка рейтинга */
 #btn-toggle-lb {
   position: absolute;
   right: 20px;
-  top: 80px; /* Сдвинули вниз, чтобы не мешала кнопкам звука */
+  top: 80px;
   height: 48px;
   padding: 0 20px;
   border-radius: 24px;
@@ -125,7 +126,6 @@ p{margin:0}
 <main id="stage">
 <canvas id="c" role="img" aria-label="Игровое поле"></canvas>
 
-<!-- Улучшенная кнопка рейтинга -->
 <button id="btn-toggle-lb" aria-label="Показать рейтинг">
   <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
   <span>Топ-10</span>
@@ -150,16 +150,18 @@ p{margin:0}
 
 <section class="scr" id="start" aria-label="Главное меню"><div class="pn">
   <h1>Fefit</h1>
-  <p class="sub">Бесконечный бег осьминога. Перепрыгивайте кораллы, водоросли и рыб.</p>
+  <p class="sub">Бесконечный бег осьминога.</p>
   
   <input type="text" id="player-name" class="input-name" placeholder="Введите ваш никнейм" maxlength="20">
 
   <button class="btn pri" data-a="play">Играть</button>
   <div class="row"><button class="btn" data-t="sfx" aria-pressed="true">Звуки</button><button class="btn" data-t="mus" aria-pressed="true">Музыка</button></div>
   <button class="btn" data-t="vib" aria-pressed="true">Вибрация</button>
-  <p class="sub" id="stats"></p>
+  
+  <p class="sub" id="stats" style="font-size: 11px;"></p>
   <div class="chips" id="ach" aria-label="Достижения"></div>
-  <p class="hint">Пробел или ↑ — прыжок. На телефоне — тап по экрану. P — пауза.</p>
+  
+  <p class="hint">Пробел или ↑ — прыжок. P — пауза.</p>
 </div></section>
 
 <section class="scr" id="pause" aria-label="Пауза"><div class="pn">
@@ -253,7 +255,6 @@ async function loadLeaderboard() {
       topList.innerHTML = '<li>Пока нет результатов</li>';
       return;
     }
-    // Сервер уже отдает только лучшие результаты
     topList.innerHTML = data.map(p => `<li><span>${p.player}</span><span>${p.score}</span></li>`).join('');
   } catch (e) {
     topList.innerHTML = '<li>Сервер недоступен</li>';
