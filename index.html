@@ -14,7 +14,7 @@ html{height:100%;scroll-padding-top:env(safe-area-inset-top,0px)}
 body{margin:0;height:100%;background:var(--bg);color:var(--fg);font:500 15px/1.45 'Unbounded',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;overflow:hidden;overscroll-behavior:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;touch-action:none}
 #stage{position:relative;width:100%;height:100%}
 #c{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none}
-.scr{position:absolute;inset:0;display:none;align-items:center;justify-content:center;padding:16px max(16px,env(safe-area-inset-right)) 16px max(16px,env(safe-area-inset-left));background:rgba(0,0,0,.12)}
+.scr{position:absolute;inset:0;display:none;align-items:center;justify-content:center;padding:16px max(16px,env(safe-area-inset-right)) 16px max(16px,env(safe-area-inset-left));background:rgba(0,0,0,.12); z-index: 10;}
 .scr.on{display:flex;animation:in .35s ease both}
 @keyframes in{from{opacity:0;transform:scale(.97)}to{opacity:1;transform:none}}
 .pn{width:min(440px,100%);max-height:100%;overflow:auto;display:flex;flex-direction:column;gap:14px;text-align:center;padding:clamp(20px,4vw,34px);background:var(--pn);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);border:2px solid var(--fg);border-radius:24px;box-shadow:6px 6px 0 var(--c)}
@@ -33,7 +33,7 @@ p{margin:0}
 .btn:active{transform:translateY(3px) scale(.97);box-shadow:none}
 .btn:focus-visible,.ib:focus-visible{outline:3px solid var(--c);outline-offset:3px}
 .btn:disabled{opacity:.4;cursor:not-allowed;transform:none;box-shadow:none}
-#hud{position:absolute;left:0;right:0;top:0;display:none;justify-content:space-between;align-items:flex-start;padding:12px max(14px,env(safe-area-inset-right)) 0 max(14px,env(safe-area-inset-left));pointer-events:none}
+#hud{position:absolute;left:0;right:0;top:0;display:none;justify-content:space-between;align-items:flex-start;padding:12px max(14px,env(safe-area-inset-right)) 0 max(14px,env(safe-area-inset-left));pointer-events:none; z-index: 5;}
 #hud.on{display:flex}
 #hud *{pointer-events:auto}
 .num{font-weight:800;font-size:clamp(26px,6vw,38px);font-variant-numeric:tabular-nums;letter-spacing:-.02em;line-height:1}
@@ -55,23 +55,91 @@ p{margin:0}
 .bar{height:10px;border:2px solid var(--fg);border-radius:8px;overflow:hidden}
 .bar i{display:block;height:100%;width:0;background:var(--c);animation:ld 1s ease-out forwards}
 @keyframes ld{to{width:100%}}
-#toast{position:absolute;left:50%;bottom:calc(18px + env(safe-area-inset-bottom,0px));transform:translate(-50%,30px);opacity:0;background:var(--fg);color:var(--bg);padding:10px 18px;border-radius:999px;font-size:13px;font-weight:800;transition:.35s;pointer-events:none;white-space:nowrap}
+#toast{position:absolute;left:50%;bottom:calc(18px + env(safe-area-inset-bottom,0px));transform:translate(-50%,30px);opacity:0;background:var(--fg);color:var(--bg);padding:10px 18px;border-radius:999px;font-size:13px;font-weight:800;transition:.35s;pointer-events:none;white-space:nowrap; z-index: 20;}
 #toast.on{transform:translate(-50%,0);opacity:1}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 
-/* Стили для рейтинга и ввода имени */
-.leaderboard { margin-top: 10px; text-align: left; background: rgba(255,255,255,0.4); border-radius: 12px; padding: 12px; border: 1.5px solid var(--fg); font-size: 13px;}
-.leaderboard h3 { margin: 0 0 8px 0; font-size: 14px; text-align: center;}
-.leaderboard ol { margin: 0; padding-left: 20px; }
-.leaderboard li { margin-bottom: 4px; display: flex; justify-content: space-between;}
-.leaderboard li span:first-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 180px; }
-.input-name { width: 100%; padding: 12px; border-radius: 12px; border: 2px solid var(--fg); background: #fff; color: var(--fg); font: inherit; text-align: center; margin-bottom: 5px; outline: none;}
+.input-name { width: 100%; padding: 12px; border-radius: 12px; border: 2px solid var(--fg); background: #fff; color: var(--fg); font: inherit; text-align: center; outline: none; margin-bottom: 5px; font-size: 16px;}
 .input-name:focus { border-color: var(--c); }
+
+/* Стили для выезжающей панели рейтинга */
+#leaderboard-panel {
+  position: absolute;
+  right: -350px; /* Изначально скрыта за экраном */
+  top: 20px;
+  bottom: 20px;
+  width: 300px;
+  background: var(--pn);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 2px solid var(--fg);
+  border-radius: 24px;
+  box-shadow: -6px 6px 0 var(--c);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  transition: right 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  z-index: 15;
+}
+#leaderboard-panel.open {
+  right: 20px; /* Выезжает при нажатии */
+}
+#leaderboard-panel h3 {
+  margin: 0; font-size: 18px; text-align: center; border-bottom: 2px solid var(--fg); padding-bottom: 10px;
+}
+#leaderboard-panel ol {
+  margin: 0; padding: 0 0 0 20px; overflow-y: auto; flex: 1; font-size: 14px;
+}
+#leaderboard-panel li {
+  margin-bottom: 8px; display: flex; justify-content: space-between; border-bottom: 1px dashed rgba(0,0,0,0.1); padding-bottom: 4px;
+}
+#leaderboard-panel li span:first-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 160px; }
+#leaderboard-panel li span:last-child { font-weight: 800; }
+
+/* Кнопка открытия рейтинга */
+#btn-toggle-lb {
+  position: absolute;
+  right: 20px;
+  bottom: 20px;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  border: 2px solid var(--fg);
+  background: var(--c);
+  color: var(--d);
+  box-shadow: 0 4px 0 var(--fg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 12;
+  transition: transform 0.1s, box-shadow 0.1s;
+}
+#btn-toggle-lb:active { transform: translateY(4px); box-shadow: none; }
+#btn-toggle-lb svg { width: 28px; height: 28px; fill: currentColor; }
+
+@media (max-width: 768px) {
+  #leaderboard-panel { width: calc(100% - 40px); right: -120%; top: auto; bottom: 90px; height: 50vh; box-shadow: 0 -6px 0 var(--c); }
+  #leaderboard-panel.open { right: 20px; }
+}
 </style>
 </head>
 <body>
 <main id="stage">
-<canvas id="c" role="img" aria-label="Игровое поле: осьминог бежит по морскому дну"></canvas>
+<canvas id="c" role="img" aria-label="Игровое поле"></canvas>
+
+<!-- Кнопка вызова рейтинга -->
+<button id="btn-toggle-lb" aria-label="Показать рейтинг">
+  <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+</button>
+
+<!-- Панель рейтинга -->
+<div id="leaderboard-panel">
+  <h3>Топ-10</h3>
+  <ol id="top-list"><li>Загрузка...</li></ol>
+  <button class="btn" id="btn-close-lb" style="min-height: 44px; font-size: 13px;">Закрыть</button>
+</div>
 
 <div id="hud">
   <div><div class="num" id="sc" aria-live="off">00000</div><div id="hi">Рекорд 00000</div></div>
@@ -87,18 +155,15 @@ p{margin:0}
 <section class="scr" id="start" aria-label="Главное меню"><div class="pn">
   <h1>Fefit</h1>
   <p class="sub">Бесконечный бег осьминога. Перепрыгивайте кораллы, водоросли и рыб.</p>
+  
+  <!-- Ввод имени до игры -->
+  <input type="text" id="player-name" class="input-name" placeholder="Введите ваш никнейм" maxlength="20">
+
   <button class="btn pri" data-a="play">Играть</button>
   <div class="row"><button class="btn" data-t="sfx" aria-pressed="true">Звуки</button><button class="btn" data-t="mus" aria-pressed="true">Музыка</button></div>
   <button class="btn" data-t="vib" aria-pressed="true">Вибрация</button>
   <p class="sub" id="stats"></p>
   <div class="chips" id="ach" aria-label="Достижения"></div>
-  
-  <!-- Блок рейтинга -->
-  <div class="leaderboard">
-    <h3>Топ-10 игроков</h3>
-    <ol id="top-list"><li>Загрузка...</li></ol>
-  </div>
-
   <p class="hint">Пробел или ↑ — прыжок. На телефоне — тап по экрану. P — пауза.</p>
 </div></section>
 
@@ -116,13 +181,8 @@ p{margin:0}
   <div class="big" id="fs">0</div>
   <div class="badge" id="nr" hidden>Новый рекорд!</div>
   <p class="sub" id="fb"></p>
+  <p class="sub" id="submit-status" style="color: var(--c); font-weight: 800; margin: 10px 0;"></p>
   
-  <!-- Блок отправки имени -->
-  <div id="submit-block" style="display:none; flex-direction: column; gap: 10px; margin-top: 10px;">
-    <input type="text" id="player-name" class="input-name" placeholder="Твоё имя" maxlength="20">
-    <button class="btn pri" id="btn-submit" data-a="submit">Отправить в рейтинг</button>
-  </div>
-
   <button class="btn pri" data-a="play">Ещё раз</button>
   <button class="btn" data-a="menu">В меню</button>
 </div></section>
@@ -140,13 +200,12 @@ const RM=matchMedia('(prefers-reduced-motion:reduce)').matches;
 const ACH=[[100,'Мелководье'],[500,'Риф'],[700,'Ночное плавание'],[1500,'Глубина'],[3000,'Бездна']];
 const API_URL = 'http://localhost:3000'; // Позже заменим на ссылку Render
 
-/* ---------- сохранение (только игровые данные, без личных) ---------- */
 let save={best:0,games:0,last:0,ach:[],sfx:true,mus:true,vib:true, playerName:''};
 try{save={...save,...JSON.parse(localStorage.getItem(KEY)||'{}')}}catch(e){}
 const persist=()=>{try{localStorage.setItem(KEY,JSON.stringify(save))}catch(e){}};
 const pad=n=>String(n).padStart(5,'0');
 
-/* ---------- звук (WebAudio, без файлов) ---------- */
+/* ---------- звук ---------- */
 let ac;
 function A(){if(!ac){const C=window.AudioContext||window.webkitAudioContext;if(C)ac=new C()}if(ac&&ac.state==='suspended')ac.resume();return ac}
 function tone(f,d,type,v,f2,delay){const a=A();if(!a)return;const t0=a.currentTime+(delay||0),o=a.createOscillator(),g=a.createGain();o.type=type||'square';o.frequency.setValueAtTime(f,t0);if(f2)o.frequency.exponentialRampToValueAtTime(f2,t0+d);g.gain.setValueAtTime(v||.06,t0);g.gain.exponentialRampToValueAtTime(.0001,t0+d);o.connect(g);g.connect(a.destination);o.start(t0);o.stop(t0+d+.03)}
@@ -162,7 +221,7 @@ const sfx=n=>{if(save.sfx)SFX[n]()};
 const vib=p=>{if(save.vib&&navigator.vibrate)try{navigator.vibrate(p)}catch(e){}};
 const SC=[196,220,262,294,330,392,440,524],PAT=[0,2,4,2,5,4,2,1,0,3,4,3,6,5,3,2];
 let step=0;
-setInterval(()=>{ // единственный таймер музыки
+setInterval(()=>{
   if(!ac||!save.mus||(st!=='play'&&st!=='start'))return;
   const f=SC[PAT[step%16]]*(th>.5?.75:1);
   tone(f,.2,'triangle',.03);
@@ -184,37 +243,37 @@ function resize(){
   S=Math.min(r.width/480,r.height/WH);W=r.width/S;HL=r.height/S;oy=HL>WH?(HL-WH)*.55:0;
 }
 
-/* ---------- API Рейтинг ---------- */
+/* ---------- Рейтинг (Боковая панель) ---------- */
+const lbPanel = $('#leaderboard-panel');
+$('#btn-toggle-lb').addEventListener('click', () => { lbPanel.classList.toggle('open'); loadLeaderboard(); });
+$('#btn-close-lb').addEventListener('click', () => { lbPanel.classList.remove('open'); });
+
 async function loadLeaderboard() {
   const topList = $('#top-list');
   topList.innerHTML = '<li>Загрузка...</li>';
   try {
     const res = await fetch(`${API_URL}/leaderboard`);
     const data = await res.json();
-    
     if (data.length === 0) {
       topList.innerHTML = '<li>Пока нет результатов</li>';
       return;
     }
     topList.innerHTML = data.map(p => `<li><span>${p.player}</span><span>${p.score}</span></li>`).join('');
   } catch (e) {
-    topList.innerHTML = '<li>Ошибка сервера</li>';
+    topList.innerHTML = '<li>Сервер недоступен</li>';
   }
 }
 
 async function submitScore() {
-  const nameInput = $('#player-name');
-  const name = nameInput.value.trim();
+  const name = save.playerName.trim();
+  const statusEl = $('#submit-status');
+  
   if (!name) {
-    toast('Введите имя!');
+    statusEl.textContent = 'Счёт не сохранён (нет имени)';
     return;
   }
-  save.playerName = name;
-  persist();
 
-  const btn = $('#btn-submit');
-  btn.disabled = true;
-  btn.textContent = 'Отправка...';
+  statusEl.textContent = 'Отправка результата...';
 
   try {
     const res = await fetch(`${API_URL}/leaderboard`, {
@@ -223,18 +282,16 @@ async function submitScore() {
       body: JSON.stringify({ player: name, score: save.last })
     });
     if (res.ok) {
-      toast('Результат отправлен!');
-      $('#submit-block').style.display = 'none';
+      statusEl.textContent = 'Результат в общем рейтинге!';
+      statusEl.style.color = '#163D42';
       loadLeaderboard();
     } else {
-      toast('Ошибка отправки');
-      btn.disabled = false;
-      btn.textContent = 'Отправить в рейтинг';
+      statusEl.textContent = 'Ошибка сервера';
+      statusEl.style.color = 'var(--c)';
     }
   } catch (e) {
-    toast('Сервер недоступен');
-    btn.disabled = false;
-    btn.textContent = 'Отправить в рейтинг';
+    statusEl.textContent = 'Сервер недоступен';
+    statusEl.style.color = 'var(--c)';
   }
 }
 
@@ -245,7 +302,7 @@ function show(id){
   hud.classList.toggle('on',st==='play');
   const el=id&&$('#'+id+' .pri');if(el)requestAnimationFrame(()=>el.focus({preventScroll:true}));
   if (id === 'start') {
-    loadLeaderboard(); // Обновляем рейтинг при входе в меню
+    $('#player-name').value = save.playerName || '';
   }
 }
 function refresh(){
@@ -255,42 +312,47 @@ function refresh(){
   $$('[data-t=vib]').forEach(b=>b.hidden=!navigator.vibrate);
   $('#hi').textContent='Рекорд '+pad(save.best);
 }
-let toastT=0;
-function toast(m){const e=$('#toast');e.textContent=m;e.classList.add('on');clearTimeout(toastT);toastT=setTimeout(()=>e.classList.remove('on'),2400)}
 
 /* ---------- игровой цикл ---------- */
 function startGame(){
+  // Сохраняем имя перед стартом
+  const nameInput = $('#player-name');
+  if (nameInput) {
+    save.playerName = nameInput.value.trim();
+    persist();
+  }
+
   clearTimeout(overT);A();
   score=0;dist=0;speed=300;th=thT=0;py=GY;vy=0;ground=true;jbuf=0;shake=0;obs=[];ps=[];gapLeft=speed*1.3;
   st='play';$('#sc').textContent=pad(0);refresh();show('');sfx('start');
   if(document.activeElement)document.activeElement.blur();
+  lbPanel.classList.remove('open'); // Закрываем рейтинг при старте
 }
+
 function menu(){clearTimeout(overT);st='start';th=thT=0;refresh();show('start')}
 function doPause(){if(st!=='play')return;st='pause';$('#ps').textContent='Счёт '+score+', рекорд '+Math.max(save.best,score);show('pause');sfx('ui')}
 function resume(){if(st!=='pause')return;st='play';show('');sfx('ui');if(document.activeElement)document.activeElement.blur()}
+
 function die(){
   st='over';save.games++;save.last=score;const nr=score>save.best;if(nr)save.best=score;persist();
   shake=1;for(let i=0;i<26;i++)ps.push({x:PX+18,y:py-22,vx:(Math.random()-.3)*260,vy:(Math.random()-.8)*240,l:.8,m:.8,r:3+Math.random()*4,ink:1});
   sfx('die');vib([70,40,140]);hud.classList.remove('on');
+  
   overT=setTimeout(()=>{
     $('#fs').textContent=score;$('#nr').hidden=!nr;
-    $('#fb').textContent='Рекорд '+save.best+', игр '+save.games;refresh();show('over');
+    $('#fb').textContent='Рекорд '+save.best+', игр '+save.games;
+    refresh();show('over');
     
-    // Показываем блок отправки
-    const submitBlock = $('#submit-block');
-    submitBlock.style.display = 'flex';
-    $('#player-name').value = save.playerName || '';
-    const btn = $('#btn-submit');
-    btn.disabled = false;
-    btn.textContent = 'Отправить в рейтинг';
+    // Автоотправка счета
+    $('#submit-status').textContent = '';
+    submitScore(); 
 
     const bs=$$('#over .btn');bs.forEach(b=>b.disabled=true);setTimeout(()=>bs.forEach(b=>b.disabled=false),700);
     if(nr)sfx('win');
   },650);
 }
-function jump(){
-  if(st!=='play')return;jbuf=.12;
-}
+
+function jump(){ if(st!=='play')return;jbuf=.12; }
 function doJump(){
   vy=-640;ground=false;jbuf=0;sfx('j');vib(12);
   for(let i=0;i<4;i++)ps.push({x:PX+8+i*8,y:py-2,vx:(i-1.5)*20,vy:-30,l:.5,m:.5,r:2+i%2});
@@ -308,7 +370,7 @@ function update(dt){
   if(ns!==score){
     const old=score;score=ns;const e=$('#sc');e.textContent=pad(score);
     if(Math.floor(score/100)>Math.floor(old/100)){sfx('ms');e.classList.remove('pulse');void e.offsetWidth;e.classList.add('pulse')}
-    ACH.forEach(([s,n])=>{if(score>=s&&!save.ach.includes(s)){save.ach.push(s);persist();toast('Достижение: '+n);sfx('win')}});
+    ACH.forEach(([s,n])=>{if(score>=s&&!save.ach.includes(s)){save.ach.push(s);persist();sfx('win')}});
     thT=Math.floor(score/700)%2;
   }
   th+=Math.sign(thT-th)*Math.min(Math.abs(thT-th),dt*.8);
@@ -393,8 +455,8 @@ function frame(ts){
   draw();requestAnimationFrame(frame);
 }
 
-/* ---------- ввод и события (регистрируются один раз) ---------- */
-const act={play:startGame,resume,menu,pause:doPause,submit:submitScore};
+/* ---------- ввод и события ---------- */
+const act={play:startGame,resume,menu,pause:doPause};
 $$('[data-a]').forEach(b=>b.addEventListener('click',()=>{
   const a = b.dataset.a;
   if(a!=='play'&&a!=='resume'&&a!=='pause')sfx('ui');
