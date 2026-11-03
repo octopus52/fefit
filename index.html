@@ -249,9 +249,8 @@ async function loadLeaderboard() {
   const topList = $('#top-list');
   topList.innerHTML = '<li>Загрузка...</li>';
   try {
-    // Используем прокси для обхода блокировки
     const proxyUrl = 'https://api.allorigins.win/raw?url=';
-    const res = await fetch(proxyUrl + encodeURIComponent(`${API_URL}/leaderboard`));
+    const res = await fetch(proxyUrl + `${API_URL}/leaderboard`);
     const data = await res.json();
     if (data.length === 0) {
       topList.innerHTML = '<li>Пока нет результатов</li>';
@@ -276,7 +275,7 @@ async function submitScore() {
 
   try {
     const proxyUrl = 'https://api.allorigins.win/raw?url=';
-    const res = await fetch(proxyUrl + encodeURIComponent(`${API_URL}/leaderboard`), {
+    const res = await fetch(proxyUrl + `${API_URL}/leaderboard`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ player: name, score: save.last })
