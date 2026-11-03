@@ -132,7 +132,7 @@ p{margin:0}
 </button>
 
 <div id="leaderboard-panel">
-  <h3>Топ-10 игроков</h3>
+  <h3>Щупальца славы</h3>
   <ol id="top-list"><li>Загрузка...</li></ol>
   <button class="btn" id="btn-close-lb" style="min-height: 44px; font-size: 13px;">Закрыть</button>
 </div>
@@ -150,13 +150,12 @@ p{margin:0}
 
 <section class="scr" id="start" aria-label="Главное меню"><div class="pn">
   <h1>Fefit</h1>
-  <p class="sub">Octopus marathon</p>
+  <p class="sub">octopus marathon</p>
   
   <input type="text" id="player-name" class="input-name" placeholder="Введите ваш никнейм" maxlength="20">
 
   <button class="btn pri" data-a="play">Играть</button>
   <div class="row"><button class="btn" data-t="sfx" aria-pressed="true">Звуки</button><button class="btn" data-t="mus" aria-pressed="true">Музыка</button></div>
-  <button class="btn" data-t="vib" aria-pressed="true">Вибрация</button>
   
   <p class="sub" id="stats" style="font-size: 11px;"></p>
   <div class="chips" id="ach" aria-label="Достижения"></div>
@@ -169,7 +168,6 @@ p{margin:0}
   <button class="btn pri" data-a="resume">Продолжить</button>
   <button class="btn" data-a="play">Начать заново</button>
   <div class="row"><button class="btn" data-t="sfx" aria-pressed="true">Звуки</button><button class="btn" data-t="mus" aria-pressed="true">Музыка</button></div>
-  <button class="btn" data-t="vib" aria-pressed="true">Вибрация</button>
   <button class="btn" data-a="menu">В меню</button>
 </div></section>
 
@@ -195,9 +193,9 @@ const cv=$('#c'),cx=cv.getContext('2d'),root=document.documentElement;
 const WH=300,GY=250,PX=70,KEY='fefit.v1';
 const RM=matchMedia('(prefers-reduced-motion:reduce)').matches;
 const ACH=[[100,'Мелководье'],[500,'Риф'],[700,'Ночное плавание'],[1500,'Глубина'],[3000,'Бездна']];
-const API_URL = 'https://fefit-api.onrender.com'; // Позже заменим на ссылку Render
+const API_URL = 'https://fefit-api.onrender.com';
 
-let save={best:0,games:0,last:0,ach:[],sfx:true,mus:true,vib:true, playerName:''};
+let save={best:0,games:0,last:0,ach:[],sfx:true,mus:true, playerName:''}; // Убрали vib из сохранения
 try{save={...save,...JSON.parse(localStorage.getItem(KEY)||'{}')}}catch(e){}
 const persist=()=>{try{localStorage.setItem(KEY,JSON.stringify(save))}catch(e){}};
 const pad=n=>String(n).padStart(5,'0');
@@ -215,7 +213,7 @@ const SFX={
   win:()=>[523,659,784,1047].forEach((f,i)=>tone(f,.18,'triangle',.07,0,i*.11))
 };
 const sfx=n=>{if(save.sfx)SFX[n]()};
-const vib=p=>{if(save.vib&&navigator.vibrate)try{navigator.vibrate(p)}catch(e){}};
+const vib=p=>{}; // ВИБРАЦИЯ ОТКЛЮЧЕНА
 const SC=[196,220,262,294,330,392,440,524],PAT=[0,2,4,2,5,4,2,1,0,3,4,3,6,5,3,2];
 let step=0;
 setInterval(()=>{
@@ -306,7 +304,6 @@ function refresh(){
   $$('[data-t]').forEach(b=>b.setAttribute('aria-pressed',String(save[b.dataset.t])));
   $('#stats').textContent=save.games?'Рекорд '+save.best+', игр '+save.games+', последний счёт '+save.last:'Рекорд пока не поставлен';
   $('#ach').innerHTML=ACH.map(([s,n])=>'<span class="chip'+(save.ach.includes(s)?' on':'')+'" title="'+s+' очков">'+n+'</span>').join('');
-  $$('[data-t=vib]').forEach(b=>b.hidden=!navigator.vibrate);
   $('#hi').textContent='Рекорд '+pad(save.best);
 }
 
@@ -332,7 +329,7 @@ function resume(){if(st!=='pause')return;st='play';show('');sfx('ui');if(documen
 function die(){
   st='over';save.games++;save.last=score;const nr=score>save.best;if(nr)save.best=score;persist();
   shake=1;for(let i=0;i<26;i++)ps.push({x:PX+18,y:py-22,vx:(Math.random()-.3)*260,vy:(Math.random()-.8)*240,l:.8,m:.8,r:3+Math.random()*4,ink:1});
-  sfx('die');vib([70,40,140]);hud.classList.remove('on');
+  sfx('die');hud.classList.remove('on'); // убрали вибрацию
   
   overT=setTimeout(()=>{
     $('#fs').textContent=score;$('#nr').hidden=!nr;
@@ -349,7 +346,7 @@ function die(){
 
 function jump(){ if(st!=='play')return;jbuf=.12; }
 function doJump(){
-  vy=-640;ground=false;jbuf=0;sfx('j');vib(12);
+  vy=-640;ground=false;jbuf=0;sfx('j'); // убрали вибрацию
   for(let i=0;i<4;i++)ps.push({x:PX+8+i*8,y:py-2,vx:(i-1.5)*20,vy:-30,l:.5,m:.5,r:2+i%2});
 }
 function spawn(){
