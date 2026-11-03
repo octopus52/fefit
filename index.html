@@ -250,7 +250,7 @@ async function loadLeaderboard() {
   topList.innerHTML = '<li>Загрузка...</li>';
   try {
     // Используем прокси для обхода блокировки
-    const proxyUrl = 'https://corsproxy.io/?';
+    const proxyUrl = 'https://api.allorigins.win/raw?url=';
     const res = await fetch(proxyUrl + encodeURIComponent(`${API_URL}/leaderboard`));
     const data = await res.json();
     if (data.length === 0) {
@@ -275,7 +275,7 @@ async function submitScore() {
   statusEl.textContent = 'Отправка результата...';
 
   try {
-    const proxyUrl = 'https://corsproxy.io/?';
+    const proxyUrl = 'https://api.allorigins.win/raw?url=';
     const res = await fetch(proxyUrl + encodeURIComponent(`${API_URL}/leaderboard`), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
