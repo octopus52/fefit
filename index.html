@@ -195,7 +195,7 @@ const cv=$('#c'),cx=cv.getContext('2d'),root=document.documentElement;
 const WH=300,GY=250,PX=70,KEY='fefit.v1';
 const RM=matchMedia('(prefers-reduced-motion:reduce)').matches;
 const ACH=[[100,'Мелководье'],[500,'Риф'],[700,'Ночное плавание'],[1500,'Глубина'],[3000,'Бездна']];
-const API_URL = 'http://localhost:3000'; // Позже заменим на ссылку Render
+const API_URL = 'http://fefit-api.onrender.com'; // Позже заменим на ссылку Render
 
 let save={best:0,games:0,last:0,ach:[],sfx:true,mus:true,vib:true, playerName:''};
 try{save={...save,...JSON.parse(localStorage.getItem(KEY)||'{}')}}catch(e){}
