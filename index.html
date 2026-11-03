@@ -1,3 +1,4 @@
+Index.html
 <!doctype html>
 <html lang="ru">
 <head>
@@ -195,7 +196,7 @@ const cv=$('#c'),cx=cv.getContext('2d'),root=document.documentElement;
 const WH=300,GY=250,PX=70,KEY='fefit.v1';
 const RM=matchMedia('(prefers-reduced-motion:reduce)').matches;
 const ACH=[[100,'Мелководье'],[500,'Риф'],[700,'Ночное плавание'],[1500,'Глубина'],[3000,'Бездна']];
-const API_URL = 'https://fefit-api.vercel.app'; // Твой сервер на Vercel
+const API_URL = 'https://fefit-api.onrender.com'; // Позже заменим на ссылку Render
 
 let save={best:0,games:0,last:0,ach:[],sfx:true,mus:true,vib:true, playerName:''};
 try{save={...save,...JSON.parse(localStorage.getItem(KEY)||'{}')}}catch(e){}
@@ -249,8 +250,7 @@ async function loadLeaderboard() {
   const topList = $('#top-list');
   topList.innerHTML = '<li>Загрузка...</li>';
   try {
-    const proxyUrl = 'https://api.allorigins.win/raw?url=';
-    const res = await fetch(proxyUrl + `${API_URL}/leaderboard`);
+    const res = await fetch(`${API_URL}/leaderboard`);
     const data = await res.json();
     if (data.length === 0) {
       topList.innerHTML = '<li>Пока нет результатов</li>';
@@ -274,8 +274,7 @@ async function submitScore() {
   statusEl.textContent = 'Отправка результата...';
 
   try {
-    const proxyUrl = 'https://api.allorigins.win/raw?url=';
-    const res = await fetch(proxyUrl + `${API_URL}/leaderboard`, {
+    const res = await fetch(`${API_URL}/leaderboard`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ player: name, score: save.last })
