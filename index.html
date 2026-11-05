@@ -293,25 +293,6 @@ async function submitScore() {
     statusEl.textContent = 'Сервер недоступен';
   }
 }
-
-  try {
-    const res = await fetch('https://fefit-api.elmina-nisredova.workers.dev/api/score', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ player: name, score: save.last })
-    });
-
-    if (res.ok) {
-      statusEl.textContent = 'Результат сохранён!';
-      statusEl.style.color = '#163D42'; // Темно-зеленый
-    } else {
-      statusEl.textContent = 'Ошибка сервера';
-    }
-  } catch (e) {
-    statusEl.textContent = 'Сервер недоступен';
-  }
-}
-
   
 /* ---------- экраны ---------- */
 const hud=$('#hud');
