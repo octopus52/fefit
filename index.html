@@ -312,23 +312,7 @@ async function submitScore() {
   }
 }
 
-  const issueBody = JSON.stringify({ player: name, score: save.last });
   
-  // ВАЖНО: замените octopus52/fefit на ваш логин/название репозитория!
-  const repoUrl = 'https://github.com/octopus52/fefit/issues/new';
-  const params = new URLSearchParams({
-    title: `Score: ${save.last} (${name})`,
-    body: issueBody,
-    labels: 'score-submission'
-  });
-
-  // Открываем новую вкладку с заполненной формой
-  window.open(`${repoUrl}?${params.toString()}`, '_blank');
-  
-  statusEl.textContent = 'Вкладка GitHub открыта. Нажмите "Submit new issue" для отправки.';
-  statusEl.style.color = 'var(--c)';
-}
-
 /* ---------- экраны ---------- */
 const hud=$('#hud');
 function show(id){
