@@ -243,28 +243,27 @@ const lbPanel = $('#leaderboard-panel');
 $('#btn-toggle-lb').addEventListener('click', () => { lbPanel.classList.toggle('open'); loadLeaderboard(); });
 $('#btn-close-lb').addEventListener('click', () => { lbPanel.classList.remove('open'); });
 
-async function loadLeaderboard() {
+function loadLeaderboard() {
   const topList = $('#top-list');
   topList.innerHTML = '<li>Загрузка...</li>';
   
-  try {
-    const res = await fetch('https://fefit-api.elmina-nisredova.workers.dev/api/leaderboard');
-    const data = await res.json();
-    
-    if (!data || data.length === 0) {
-      topList.innerHTML = '<li>Пока нет результатов</li>';
-      return;
-    }
-    
-    topList.innerHTML = data.map(p => 
-      `<li><span>${p.player}</span><span>${p.score}</span></li>`
-    ).join('');
-  } catch (e) {
-    topList.innerHTML = '<li>Не удалось загрузить рейтинг</li>';
-  }
+  fetch('https://fefit-api.elmina-nisredova.workers.dev/api/leaderboard')
+    .then(res => res.json())
+    .then(data => {
+      if (!data || data.length === 0) {
+        topList.innerHTML = '<li>Пока нет результатов</li>';
+        return;
+      }
+      topList.innerHTML = data.map(p => 
+        `<li><span>${p.player}</span><span>${p.score}</span></li>`
+      ).join('');
+    })
+    .catch(e => {
+      topList.innerHTML = '<li>Не удалось загрузить рейтинг</li>';
+    });
 }
 
-async function submitScore() {
+function submitScore() {
   const name = save.playerName.trim();
   const statusEl = $('#submit-status');
   
@@ -276,22 +275,22 @@ async function submitScore() {
   statusEl.textContent = 'Отправка результата...';
   statusEl.style.color = 'var(--c)';
 
-  try {
-    const res = await fetch('https://fefit-api.elmina-nisredova.workers.dev/api/score', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ player: name, score: save.last })
-    });
-
+  fetch('https://fefit-api.elmina-nisredova.workers.dev/api/score', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ player: name, score: save.last })
+  })
+  .then(res => {
     if (res.ok) {
       statusEl.textContent = 'Результат сохранён!';
       statusEl.style.color = '#163D42'; // Темно-зеленый
     } else {
       statusEl.textContent = 'Ошибка сервера';
     }
-  } catch (e) {
+  })
+  .catch(e => {
     statusEl.textContent = 'Сервер недоступен';
-  }
+  });
 }
   
 /* ---------- экраны ---------- */
