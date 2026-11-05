@@ -246,16 +246,23 @@ $('#btn-close-lb').addEventListener('click', () => { lbPanel.classList.remove('o
 async function loadLeaderboard() {
   const topList = $('#top-list');
   topList.innerHTML = '<li>Загрузка...</li>';
+  
   try {
-    const res = await fetch(`${API_URL}/leaderboard`);
+    // ВАЖНО: замените octopus52/fefit на ваш логин/название репозитория, если они отличаются!
+    const url = 'https://raw.githubusercontent.com/octopus52/fefit/main/leaderboard.json?t=' + Date.now();
+    const res = await fetch(url);
     const data = await res.json();
-    if (data.length === 0) {
+    
+    if (!data || data.length === 0) {
       topList.innerHTML = '<li>Пока нет результатов</li>';
       return;
     }
-    topList.innerHTML = data.map(p => `<li><span>${p.player}</span><span>${p.score}</span></li>`).join('');
+    
+    topList.innerHTML = data.map(p => 
+      `<li><span>${p.player}</span><span>${p.score}</span></li>`
+    ).join('');
   } catch (e) {
-    topList.innerHTML = '<li>Сервер недоступен</li>';
+    topList.innerHTML = '<li>Не удалось загрузить рейтинг</li>';
   }
 }
 
@@ -268,26 +275,21 @@ async function submitScore() {
     return;
   }
 
-  statusEl.textContent = 'Отправка результата...';
+  const issueBody = JSON.stringify({ player: name, score: save.last });
+  
+  // ВАЖНО: замените octopus52/fefit на ваш логин/название репозитория!
+  const repoUrl = 'https://github.com/octopus52/fefit/issues/new';
+  const params = new URLSearchParams({
+    title: `Score: ${save.last} (${name})`,
+    body: issueBody,
+    labels: 'score-submission'
+  });
 
-  try {
-    const res = await fetch(`${API_URL}/leaderboard`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ player: name, score: save.last })
-    });
-    if (res.ok) {
-      statusEl.textContent = 'Результат сохранён!';
-      statusEl.style.color = '#163D42';
-      loadLeaderboard();
-    } else {
-      statusEl.textContent = 'Ошибка сервера';
-      statusEl.style.color = 'var(--c)';
-    }
-  } catch (e) {
-    statusEl.textContent = 'Сервер недоступен';
-    statusEl.style.color = 'var(--c)';
-  }
+  // Открываем новую вкладку с заполненной формой
+  window.open(`${repoUrl}?${params.toString()}`, '_blank');
+  
+  statusEl.textContent = 'Вкладка GitHub открыта. Нажмите "Submit new issue" для отправки.';
+  statusEl.style.color = 'var(--c)';
 }
 
 /* ---------- экраны ---------- */
