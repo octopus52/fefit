@@ -274,7 +274,7 @@ function submitScore() {
     return;
   }
   if (!currentSessionId) {
-    statusEl.textContent = 'Ошибка: нет билета сессии';
+    statusEl.textContent = 'Ошибка: вы зашли в игру до обновления сайта? Обновите страницу';
     return;
   }
 
@@ -287,15 +287,17 @@ function submitScore() {
     body: JSON.stringify({ 
       player: name, 
       score: save.last,
-      sessionId: currentSessionId // Передаем билет!
+      sessionId: currentSessionId
     })
   })
-  .then(res => {
+  .then(async res => {
+    const data = await res.json(); // Читаем ответ от сервера
     if (res.ok) {
       statusEl.textContent = 'Результат сохранён!';
       statusEl.style.color = '#163D42';
     } else {
-      statusEl.textContent = 'Ошибка: подозрение на читерство.';
+      // Показываем РЕАЛЬНУЮ ошибку сервера
+      statusEl.textContent = 'Ошибка: ' + (data.error || 'упс');
       statusEl.style.color = '#E2636C';
     }
   })
