@@ -225,9 +225,11 @@ setInterval(()=>{
 },230);
 
 /* ---------- состояние ---------- */
+/* ---------- состояние ---------- */
 let st='load',S=1,dpr=1,W=480,HL=WH,oy=0,t=0,last=0;
 let score=0,dist=0,speed=300,th=0,thT=0,lth=-1,py=GY,vy=0,ground=true,jbuf=0,gapLeft=0,shake=0,overT=0;
 let obs=[],ps=[];
+let currentSessionId = null; 
 const hex=h=>[1,3,5].map(i=>parseInt(h.slice(i,i+2),16));
 const PAL={bg:[hex('#E4FEFF'),hex('#163D42')],far:[hex('#98F9FF'),hex('#235A62')],fg:[hex('#163D42'),hex('#98F9FF')]};
 const col=k=>{const[a,b]=PAL[k];return'rgb('+a.map((v,i)=>Math.round(v+(b[i]-v)*th)).join()+')'};
@@ -271,6 +273,10 @@ function submitScore() {
     statusEl.textContent = 'Счёт не сохранён (введите никнейм в меню!)';
     return;
   }
+  if (!currentSessionId) {
+    statusEl.textContent = 'Ошибка: нет билета сессии';
+    return;
+  }
 
   statusEl.textContent = 'Отправка результата...';
   statusEl.style.color = 'var(--c)';
@@ -278,14 +284,19 @@ function submitScore() {
   fetch('https://fefit-api.elmina-nisredova.workers.dev/api/score', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ player: name, score: save.last })
+    body: JSON.stringify({ 
+      player: name, 
+      score: save.last,
+      sessionId: currentSessionId // Передаем билет!
+    })
   })
   .then(res => {
     if (res.ok) {
       statusEl.textContent = 'Результат сохранён!';
-      statusEl.style.color = '#163D42'; // Темно-зеленый
+      statusEl.style.color = '#163D42';
     } else {
-      statusEl.textContent = 'Ошибка сервера';
+      statusEl.textContent = 'Ошибка: подозрение на читерство.';
+      statusEl.style.color = '#E2636C';
     }
   })
   .catch(e => {
@@ -312,6 +323,11 @@ function refresh(){
 
 /* ---------- игровой цикл ---------- */
 function startGame(){
+  fetch('https://fefit-api.elmina-nisredova.workers.dev/api/start', { method: 'POST' })
+    .then(res => res.json())
+    .then(data => { if(data.sessionId) currentSessionId = data.sessionId; })
+    .catch(e => console.log('Ошибка сессии', e));
+
   const nameInput = $('#player-name');
   if (nameInput) {
     save.playerName = nameInput.value.trim();
